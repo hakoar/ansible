@@ -1,0 +1,136 @@
+############################################################
+#
+# USAGE:
+#   Install Grafana.
+#
+# PARAMETERS:
+#
+# PLAYBOOK EXAMPLE:
+#   - hosts: grafana
+#     gather_facts: no
+#     vars_files:
+#       - group_vars/grafana
+#     roles:
+#       - role: debian-grafana-install
+#         when: ansible_facts['os_family'] == 'Debian'
+#     tags: [ never, grafana-install ]
+#
+############################################################
+
+- name: "Verify that required OS packages are installed..."
+  become: yes
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest 
+    update_cache: true
+  with_items: 
+    - "apt-transport-https"
+    - "software-properties-common"
+    - "wget"
+    - "python3-apt"
+  ignore_errors: no
+
+- name: "Make sure that APT keyrings directory exists..."
+  become: yes
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory 
+    owner: root
+    group: root
+    mode: u+rwx,g-rx,o-rx
+  ignore_errors: no
+
+- name: "Download Grafana GPG key for APT..."
+  connection: local 
+  ansible.builtin.get_url:
+    url: "https://apt.grafana.com/gpg.key"
+    dest: "files/grafana.asc"
+  run_once: true
+  when: not ansible_use_proxy | bool
+  ignore_errors: no
+
+- name: "Download Grafana GPG key for APT (via proxy)..."
+  connection: local
+  environment:
+    http_proxy: "{{ ansible_system_proxy }}"
+    https_proxy: "{{ ansible_system_proxy }}"
+  ansible.builtin.get_url:
+    url: "https://apt.grafana.com/gpg.key"
+    dest: "files/grafana.asc"
+  run_once: true
+  when: ansible_use_proxy | bool and ansible_system_proxy is defined
+  ignore_errors: no
+
+- name: "Upload Grafana GPG key for APT..."
+  ansible.builtin.copy:
+    src: "files/grafana.asc"
+    dest: "/etc/apt/trusted.gpg.d/grafana.asc"
+    owner: root
+    group: root
+    mode: u+rw,g+r,o+r
+  ignore_errors: no
+
+- name: "Add Grafana APT repository..."
+  become: yes
+  ansible.builtin.apt_repository: 
+    repo: "deb https://apt.grafana.com stable main"
+    state: present 
+    filename: grafana-enterprise
+    update_cache: yes
+  ignore_errors: no
+
+- name: "Stop Grafana services..."
+  become: yes
+  ansible.builtin.service:
+    name: grafana-server
+    state: stopped
+  ignore_errors: yes
+
+- name: "Install Grafana Enterprise application..."
+  become: yes
+  ansible.builtin.apt:
+    name: "grafana-enterprise"
+    state: latest 
+    update_cache: false
+  ignore_errors: no
+
+- name: "Stop Grafana services..."
+  become: yes
+  ansible.builtin.service:
+    name: grafana-server
+    state: stopped
+  ignore_errors: yes
+
+- name: "Copy Grafana configuration..."
+  become: yes
+  ansible.builtin.template:
+    src: "grafana.ini.j2" 
+    dest: "/etc/grafana/grafana.ini"
+    owner: root 
+    group: grafana
+    backup: true
+  ignore_errors: no
+
+- name: "Start Grafana services..."
+  become: yes
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+  ignore_errors: no
+
+- name: "Sleep for 10 seconds before checking Grafana availability..."
+  ansible.builtin.wait_for:
+    timeout: 10
+  delegate_to: localhost
+
+- name: "Check if Grafana interface is up and running ?"
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:{{ grafana_port }}/api/health"
+    return_content: true
+  register: url_response
+  failed_when: url_response is failed
+  ignore_errors: no
+
+# - name: "DEBUG..."
+#   ansible.builtin.debug: 
+#     var=url_response

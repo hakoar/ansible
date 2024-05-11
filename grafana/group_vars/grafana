@@ -1,0 +1,29 @@
+##########################################################
+#
+# Grafana role parameters
+#
+##########################################################
+
+# When host is rebooted, listen this port to reply before declaring host as online.
+os_wait_online_port: "22"
+
+# Grafana WEB UI port
+grafana_port: "3000"
+
+# Password for internal grafana DB
+grafana_db_password: "change_me!"
+
+# Grafana Admin Account for UI
+grafana_admin_user: "grafana-admin"
+
+# Grafana Admin Password for UI
+grafana_admin_password: "change_me!"
+
+# Whether or not allow users signup (true/false)
+grafana_allow_user_signup: "false"
+
+# Whether or not use proxy in tasks (true/false)
+ansible_use_proxy: "false"
+
+# Default proxy for ansible specific tasks which needs it
+ansible_system_proxy: "proxy:8080"

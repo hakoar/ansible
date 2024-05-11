@@ -1,0 +1,62 @@
+############################################################
+#
+# USAGE:
+#   Uninstall Grafana.
+#
+# PARAMETERS:
+#
+# PLAYBOOK EXAMPLE:
+#   - hosts: grafana
+#     gather_facts: no
+#     vars_files:
+#       - group_vars/grafana
+#     roles:
+#       - role: debian-grafana-uninstall
+#         when: ansible_facts['os_family'] == 'Debian'
+#     tags: [ never, grafana-uninstall ]
+#
+############################################################
+
+- name: "Stop Grafana services..."
+  become: yes
+  ansible.builtin.service:
+    name: grafana-server
+    state: stopped
+  ignore_errors: yes
+
+- name: "Uninstall Grafana Enterprise application..."
+  become: yes
+  ansible.builtin.apt:
+    name: "grafana-enterprise"
+    state: absent
+    purge: true
+    update_cache: false
+  ignore_errors: no
+
+- name: "Remove Grafana configuration..."
+  become: yes
+  ansible.builtin.file:
+    path: "/etc/grafana"
+    state: absent
+  ignore_errors: no
+
+- name: "Remove Grafana APT repository..."
+  become: yes
+  ansible.builtin.apt_repository: 
+    repo: "deb https://apt.grafana.com stable main"
+    state: absent
+    filename: grafana-enterprise
+  ignore_errors: no
+
+- name: "Remove Grafana GPG key for APT..."
+  ansible.builtin.file:
+    path: "/etc/apt/trusted.gpg.d/grafana.asc"
+    state: absent
+  ignore_errors: no
+
+- name: "Remove Grafana DB..."
+  become: yes
+  ansible.builtin.file:
+    path: "/var/lib/grafana"
+    state: absent
+  ignore_errors: no
