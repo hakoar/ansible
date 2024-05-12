@@ -7,7 +7,7 @@
 #
 # PLAYBOOK EXAMPLE:
 #   - hosts: grafana
-#     gather_facts: no
+#     gather_facts: yes
 #     vars_files:
 #       - group_vars/grafana
 #     roles:

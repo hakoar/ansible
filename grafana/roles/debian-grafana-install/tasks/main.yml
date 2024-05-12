@@ -7,7 +7,7 @@
 #
 # PLAYBOOK EXAMPLE:
 #   - hosts: grafana
-#     gather_facts: no
+#     gather_facts: yes
 #     vars_files:
 #       - group_vars/grafana
 #     roles:
@@ -30,22 +30,13 @@
     - "python3-apt"
   ignore_errors: no
 
-- name: "Make sure that APT keyrings directory exists..."
-  become: yes
-  ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory 
-    owner: root
-    group: root
-    mode: u+rwx,g-rx,o-rx
-  ignore_errors: no
-
 - name: "Download Grafana GPG key for APT..."
-  connection: local 
   ansible.builtin.get_url:
     url: "https://apt.grafana.com/gpg.key"
-    dest: "files/grafana.asc"
-  run_once: true
+    dest: "/etc/apt/trusted.gpg.d/grafana.asc"
+    owner: root
+    group: root
+    mode: u+rw,g+r,o+r
   when: not ansible_use_proxy | bool
   ignore_errors: no
 
@@ -56,18 +47,11 @@
     https_proxy: "{{ ansible_system_proxy }}"
   ansible.builtin.get_url:
     url: "https://apt.grafana.com/gpg.key"
-    dest: "files/grafana.asc"
-  run_once: true
-  when: ansible_use_proxy | bool and ansible_system_proxy is defined
-  ignore_errors: no
-
-- name: "Upload Grafana GPG key for APT..."
-  ansible.builtin.copy:
-    src: "files/grafana.asc"
     dest: "/etc/apt/trusted.gpg.d/grafana.asc"
     owner: root
     group: root
     mode: u+rw,g+r,o+r
+  when: ansible_use_proxy | bool and ansible_system_proxy is defined
   ignore_errors: no
 
 - name: "Add Grafana APT repository..."
@@ -101,7 +85,7 @@
     state: stopped
   ignore_errors: yes
 
-- name: "Copy Grafana configuration..."
+- name: "Apply Grafana configuration..."
   become: yes
   ansible.builtin.template:
     src: "grafana.ini.j2" 

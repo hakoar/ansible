@@ -62,5 +62,5 @@ This has been tested with Ansible core 2.16.6 and Python 3.11.2 on Debian 12
 
 Install these Debian packages to your Ansible host which is running this playbook:
 ```
-sudo apt-get install -y python-is-python3 sshpass gpg
+sudo apt-get install -y python-is-python3 sshpass
 ```
