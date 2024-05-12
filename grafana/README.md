@@ -43,6 +43,16 @@ SSH password:
 > It needs SSH account as a command line parameter which can login to the target servers. This account also needs to have SUDO privileges.
 
 > **This cannot change Grafana Admin password! It can only be set on first start.**
+```
+grafana:~$ ./reconfigure-grafana.sh userx
+-------------------------------------------------------------------
+
+ Reconfiguring Grafana...
+
+-------------------------------------------------------------------
+Using /home/userx/ansible/grafana/ansible.cfg as config file
+SSH password: 
+```
 
 ### Uninstall Grafana
 ---
