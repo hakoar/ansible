@@ -36,6 +36,13 @@ grafana:~$ ./install-grafana.sh userx
 Using /home/userx/ansible/grafana/ansible.cfg as config file
 SSH password: 
 ```
+### Reconfigure Grafana
+---
+> You start the reconfiguration by running **reconfigure-grafana.sh** script.
+
+> It needs SSH account as a command line parameter which can login to the target servers. This account also needs to have SUDO privileges.
+
+> **This cannot change Grafana Admin password! It can only be set on first start.**
 
 ### Uninstall Grafana
 ---

@@ -1,7 +1,7 @@
 ############################################################
 #
 # USAGE:
-#   Install Grafana.
+#   Reconfigure Grafana.
 #
 # PARAMETERS:
 #
@@ -11,24 +11,11 @@
 #     vars_files:
 #       - group_vars/grafana
 #     roles:
-#       - role: debian-grafana-install
+#       - role: debian-grafana-reconfigure
 #         when: ansible_facts['os_family'] == 'Debian'
-#     tags: [ never, grafana-install ]
+#     tags: [ never, grafana-reconfigure ]
 #
 ############################################################
-
-- name: "Verify that required OS packages are installed..."
-  become: yes
-  ansible.builtin.apt:
-    name: "{{ item }}"
-    state: latest 
-    update_cache: true
-  with_items: 
-    - "apt-transport-https"
-    - "software-properties-common"
-    - "wget"
-    - "python3-apt"
-  ignore_errors: no
 
 - name: "Download Grafana GPG key for APT..."
   ansible.builtin.get_url:
@@ -54,36 +41,21 @@
   when: ansible_use_proxy | bool and ansible_system_proxy is defined
   ignore_errors: no
 
+- name: "Stop Grafana services..."
+  become: yes
+  ansible.builtin.service:
+    name: grafana-server
+    state: stopped
+  ignore_errors: yes
+
 - name: "Add Grafana APT repository..."
   become: yes
   ansible.builtin.apt_repository: 
     repo: "{{ grafana_apt_url }}"
     state: present 
     filename: "{{ grafana_apt_sources_file }}"
-    update_cache: yes
+    update_cache: no
   ignore_errors: no
-
-- name: "Stop Grafana services..."
-  become: yes
-  ansible.builtin.service:
-    name: grafana-server
-    state: stopped
-  ignore_errors: yes
-
-- name: "Install Grafana Enterprise application..."
-  become: yes
-  ansible.builtin.apt:
-    name: "grafana-enterprise"
-    state: latest 
-    update_cache: false
-  ignore_errors: no
-
-- name: "Stop Grafana services..."
-  become: yes
-  ansible.builtin.service:
-    name: grafana-server
-    state: stopped
-  ignore_errors: yes
 
 - name: "Apply Grafana configuration..."
   become: yes

@@ -43,20 +43,20 @@
 - name: "Remove Grafana APT repository..."
   become: yes
   ansible.builtin.apt_repository: 
-    repo: "deb https://apt.grafana.com stable main"
+    repo: "{{ grafana_apt_url }}"
     state: absent
-    filename: grafana-enterprise
+    filename: "{{ grafana_apt_sources_file }}"
   ignore_errors: no
 
 - name: "Remove Grafana GPG key for APT..."
   ansible.builtin.file:
-    path: "/etc/apt/trusted.gpg.d/grafana.asc"
+    path: "{{ grafana_apt_key_dst }}"
     state: absent
   ignore_errors: no
 
 - name: "Remove Grafana DB..."
   become: yes
   ansible.builtin.file:
-    path: "/var/lib/grafana"
+    path: "{{ grafana_data }}"
     state: absent
   ignore_errors: no

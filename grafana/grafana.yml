@@ -3,7 +3,7 @@
   become: true
   tasks:
     - name: Check that tags are provided
-      fail: 'msg="Please run this playbook with one of the following tags: grafana-install or grafana-uninstall"'
+      fail: 'msg="Please run this playbook with one of the following tags: grafana-install, grafana-reconfigure or grafana-uninstall"'
       when: tags is not defined
 
 # Install latest Grafana Enterprise version
@@ -15,6 +15,16 @@
     - role: debian-grafana-install
       when: ansible_facts['os_family'] == 'Debian'
   tags: [ never, grafana-install ]
+
+# Reconfigure Grafana Enterprise version
+- hosts: grafana
+  gather_facts: no
+  vars_files:
+    - group_vars/grafana
+  roles:
+    - role: debian-grafana-reconfigure
+      when: ansible_facts['os_family'] == 'Debian'
+  tags: [ never, grafana-reconfigure ]
 
 # Uninstall Grafana Enterprise version
 - hosts: grafana

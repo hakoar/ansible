@@ -7,8 +7,23 @@
 # When host is rebooted, listen this port to reply before declaring host as online.
 os_wait_online_port: "22"
 
+# Grafana APT repository URL
+grafana_apt_url: "deb https://apt.grafana.com stable main"
+grafana_apt_sources_file: "grafana-enterprise"
+
+# Grafana GPG key URL
+grafana_gpg_url: "https://apt.grafana.com/gpg.key"
+grafana_apt_key_dst: "/etc/apt/trusted.gpg.d/grafana.asc"
+
+# Grafana configuration
+grafana_config_dst: "/etc/grafana/grafana.ini"
+grafana_config_template: "grafana.ini.j2"
+
+# Grafana data and DB location
+grafana_data: "/var/lib/grafana"
+
 # Grafana WEB UI port
-grafana_port: "3000"
+grafana_port: "4000"
 
 # Password for internal grafana DB
 grafana_db_password: "change_me!"
